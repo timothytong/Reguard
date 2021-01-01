@@ -1,11 +1,14 @@
 'use strict';
 
-var AWS = require('aws-sdk');
-var express = require('express');
-var bodyParser = require('body-parser');
+const AWS = require('aws-sdk');
+const express = require('express');
+const bodyParser = require('body-parser');
+const isProduction = process.env.NODE_ENV === 'production';
 
 AWS.config.region = process.env.REGION || 'us-east-1';
-AWS.config.loadFromPath('./aws-cred.json');
+if (!isProduction) {
+    AWS.config.loadFromPath('./aws-cred.json');
+}
 
 const docClient = new AWS.DynamoDB.DocumentClient();
 
