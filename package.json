@@ -9,7 +9,7 @@
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s --source-maps inline --copy-files",
     "build": "npm run clean && npm run build-babel",
-    "start": "npm run build && node ./build/app.js"
+    "start": "npm install && npm run build && node ./build/app.js"
   },
   "author": "Timothy Tong",
   "license": "ISC",
