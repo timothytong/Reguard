@@ -17,7 +17,7 @@ function getActiveSession(req, res) {
 
     const onError = (err) => {
         return res.status(500).json({
-            message: 'Unexpected error occurred while retrieving active sesison.',
+            message: 'Unexpected error occurred while retrieving active session.',
             error: err,
         });
     };

@@ -2,14 +2,14 @@
   "name": "reguard-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "private": true,
   "scripts": {
     "mon": "nodemon --exec babel-node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s --source-maps inline --copy-files",
     "build": "npm run clean && npm run build-babel",
-    "start": "npm install && npm run build && node ./build/app.js"
+    "start": "npm run build && node ./build/app.js"
   },
   "author": "Timothy Tong",
   "license": "ISC",
@@ -30,13 +30,17 @@
     "passport-local": "^1.0.0",
     "path": "^0.12.7",
     "redis": "^3.0.2",
-    "socket.io": "^3.0.4"
-  },
-  "devDependencies": {
+    "socket.io": "^3.0.4",
     "@babel/cli": "^7.12.10",
     "@babel/core": "^7.12.10",
     "@babel/node": "^7.12.10",
-    "@babel/preset-env": "^7.12.11",
-    "nodemon": "^2.0.6"
+    "@babel/preset-env": "^7.12.11"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "nodemon": "^2.0.6",
+    "webpack": "^5.11.1",
+    "webpack-cli": "^4.3.1"
   }
 }

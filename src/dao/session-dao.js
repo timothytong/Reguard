@@ -9,7 +9,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 AWS.config.region = process.env.REGION || 'us-east-1';
 if (!isProduction) {
-    path.join(__dirname, '..', 'aws-cred.json')
+    AWS.config.loadFromPath(path.join(__dirname, '..', 'aws-cred.json'))
 }
 
 const docClient = new AWS.DynamoDB.DocumentClient();

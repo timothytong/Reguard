@@ -52,13 +52,11 @@ export default class Api {
 
     // connect resource routers
     routes() {
-        console.log(`Using session router path`)
         // attach it to our express app
-        this.express.use('/sessions', sessionRouter);
-        this.express.use(express.static(path.join(__dirname, 'public')));
+        this.express.use('/api/v1/sessions', sessionRouter);
+        this.express.use(express.static('public'));
         this.express.set('view engine', 'ejs');
-        // this.express.get('/*', (req, res) => res.render(path.resolve(__dirname, 'static', 'index.html')));
-        this.express.get('/', (req, res) => res.render('index'));
+        this.express.get('/', (req, res) => res.send('Home'));
     }
 }
 
