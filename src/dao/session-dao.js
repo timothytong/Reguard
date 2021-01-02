@@ -2,24 +2,21 @@
 
 import path from 'path';
 
+const SESSIONS_TABLE_NAME = 'guardian_sessions'
+const ACTIVE_PREFIX = "ACTIVE#";
 const AWS = require('aws-sdk');
-const express = require('express');
-const bodyParser = require('body-parser');
-const isProduction = process.env.NODE_ENV === 'production';
+
+let isProduction = process.env.NODE_ENV === 'production';
 
 AWS.config.region = process.env.REGION || 'us-east-1';
 if (!isProduction) {
-    AWS.config.loadFromPath(path.join(__dirname, '..', 'aws-cred.json'))
+    let credsPath = path.join(__dirname, '..', 'aws-cred.json')
+    AWS.config.loadFromPath(credsPath)
 }
 
 const docClient = new AWS.DynamoDB.DocumentClient();
 
-const SESSIONS_TABLE_NAME = 'guardian_sessions'
-
-export function getUserActiveSession(userId, deviceId) {
-    // TODO: `${userId}#${deviceId}`
-    let sessionId = `user#uuid1`;
-
+export function getSessionIfActive(sessionId) {
     let params = {
         TableName: SESSIONS_TABLE_NAME,
         KeyConditionExpression: '#sid = :sid and begins_with(#st, :active_kw)',
@@ -31,19 +28,38 @@ export function getUserActiveSession(userId, deviceId) {
         },
         ExpressionAttributeValues: {
             ':sid': sessionId,
-            ':active_kw': 'ACTIVE',
+            ':active_kw': ACTIVE_PREFIX,
         }
     };
 
     return new Promise(res => {
         docClient.query(params, function(err, data) {
             if (err || data.Items.length == 0) {
-                console.error('Unable to query. Error:', JSON.stringify(err, null, 2));
-                res(null);
+                return res(null);
             } else {
-                console.log('Query succeeded.');
-                res(data.Items[0]);
+                return res(data.Items[0]);
             }
+        });
+    });
+}
+
+export function createActiveSession(sessionId) {
+    let startTime = Date.now().toString();
+
+    let params = {
+        TableName: SESSIONS_TABLE_NAME,
+        Item: {
+            session_id: sessionId,
+            start_time: `${ACTIVE_PREFIX}${startTime}`,
+        }
+    };
+
+    return new Promise((res, rej) => {
+        docClient.put(params, function(err, data) {
+            if (err) {
+                return rej(err);
+            }
+            res(data);
         });
     });
 }
