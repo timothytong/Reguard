@@ -4,11 +4,12 @@
   "description": "",
   "private": true,
   "scripts": {
-    "mon": "nodemon --exec babel-node src/app.js",
+    "mon": "nodemon --exec \"npm run lint && babel-node src/app.js\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s --source-maps inline --copy-files",
     "build": "npm run clean && npm run build-babel",
+    "lint" : "./node_modules/.bin/eslint src --ext .js,.jsx",
     "start": "npm run build && node ./build/app.js"
   },
   "author": "Timothy Tong",

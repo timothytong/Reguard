@@ -1,3 +1,4 @@
+/*
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 
@@ -14,3 +15,4 @@ passport.use(new LocalStrategy({
       return done(null, user);
     }).catch(done);
 }));
+*/
