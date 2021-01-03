@@ -1,5 +1,9 @@
 import { Router } from 'express';
-import { getSessionIfActive, createActiveSession } from '../dao/session-dao';
+import {
+  setEndTime,
+  getSessionIfActive,
+  createActiveSession,
+} from '../dao/session-dao';
 
 const router = Router();
 
@@ -10,13 +14,13 @@ function getActiveSession(req, res) {
 
   const onError = (err) => res.status(500).json({
     message: 'Unexpected error occurred while retrieving active session.',
-    error: err,
+    error: err.message,
   });
 
   // TODO: `${userId}#${deviceId}`
-  const sessionId = 'user#uuid1';
+  const sessionId = 'user#uuid2';
 
-  getSessionIfActive(sessionId)
+  return getSessionIfActive(sessionId)
     .then((activeSession) => onSuccess(activeSession))
     .catch((err) => onError(err));
 }
@@ -27,13 +31,13 @@ function startSession(req, res) {
 
   const onError = (err) => res.status(500).json({
     message: 'Error occurred while starting session.',
-    error: err,
+    error: err.message,
   });
 
   // TODO: `${userId}#${deviceId}`
   const sessionId = 'user#uuid2';
 
-  getSessionIfActive(sessionId)
+  return getSessionIfActive(sessionId)
     .then((activeSession) => {
       if (!activeSession) {
         return createActiveSession(sessionId)
@@ -47,7 +51,20 @@ function startSession(req, res) {
     });
 }
 
+function endSession(req, res) {
+  const onError = (err) => res.status(500).json({
+    message: 'Error occurred while ending session.',
+    error: err.message,
+  });
+  const sessionId = 'user#uuid1';
+
+  return setEndTime(sessionId)
+    .then(() => res.sendStatus(200))
+    .catch((err) => onError(err));
+}
+
 router.get('/active', getActiveSession);
 router.post('/start', startSession);
+router.post('/end', endSession);
 
 module.exports = router;
