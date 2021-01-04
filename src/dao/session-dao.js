@@ -1,16 +1,6 @@
-import path from 'path';
-import AWS from 'aws-sdk';
+import docClient from './dynamodb-dao';
 
 const SESSIONS_TABLE_NAME = 'guardian_sessions';
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-
-AWS.config.region = process.env.REGION || 'us-east-1';
-if (!IS_PRODUCTION) {
-  const credsPath = path.join(__dirname, '..', 'aws-cred.json');
-  AWS.config.loadFromPath(credsPath);
-}
-
-const docClient = new AWS.DynamoDB.DocumentClient();
 
 export function getSessionIfActive(sessionId) {
   const params = {

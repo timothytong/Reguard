@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import sessionRouter from './routers/session-router';
+import userRouter from './routers/user-router';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const secret = isProduction ? process.env.APP_SECRET : 'reguard-test';
@@ -53,7 +54,8 @@ export default class Api {
   // connect resource routers
   routes() {
     // attach it to our express app
-    this.express.use('/api/v1/sessions', sessionRouter);
+    this.express.use('/api/v1/session', sessionRouter);
+    this.express.use('/api/v1/user', userRouter);
     this.express.use(express.static('public'));
     this.express.set('view engine', 'ejs');
     this.express.get('/', (req, res) => res.send('Home'));
