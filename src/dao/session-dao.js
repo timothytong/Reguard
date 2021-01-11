@@ -46,27 +46,28 @@ export function createActiveSession(sessionId) {
   });
 }
 
-export function setEndTime(sessionId) {
-  return new Promise((res, rej) => getSessionIfActive(sessionId)
-    .then((session) => {
-      if (!session) {
-        return rej(new Error('User has no active session'));
-      }
-      const endTime = Date.now().toString();
-      const params = {
-        TableName: SESSIONS_TABLE_NAME,
-        Item: {
-          session_id: session.session_id,
-          start_time: session.start_time,
-          end_time: endTime,
-        },
-      };
+export function setEndTime(sessionId, startTime, endTime) {
+  return new Promise((res, rej) => {
+    const params = {
+      TableName: SESSIONS_TABLE_NAME,
+      Key: {
+        session_id: sessionId,
+        start_time: startTime,
+      },
+      UpdateExpression: 'set #et = :et',
+      ExpressionAttributeNames: {
+        '#et': 'end_time',
+      },
+      ExpressionAttributeValues: {
+        ':et': endTime,
+      },
+    };
 
-      return docClient.put(params, (err) => {
-        if (err) {
-          return rej(err);
-        }
-        return res();
-      });
-    }));
+    return docClient.update(params, (err) => {
+      if (err) {
+        return rej(err);
+      }
+      return res();
+    });
+  });
 }

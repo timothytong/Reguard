@@ -58,9 +58,17 @@ function endSession(req, res) {
   });
   const sessionId = 'user#uuid1';
 
-  return setEndTime(sessionId)
-    .then(() => res.sendStatus(200))
-    .catch((err) => onError(err));
+  return getSessionIfActive(sessionId)
+    .then((activeSession) => {
+      if (!activeSession) {
+        return onError(new Error('User has no active session'));
+      }
+      const startTime = activeSession.start_time;
+      const endTime = Date.now().toString();
+      return setEndTime(sessionId, startTime, endTime)
+        .then(() => res.sendStatus(200))
+        .catch((err) => onError(err));
+    });
 }
 
 router.get('/active', getActiveSession);
