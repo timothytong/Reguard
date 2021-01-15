@@ -28,13 +28,15 @@ function getUserDevices(req, res) {
 
   const onSuccess = (deviceItems) => {
     const devices = deviceItems.map((deviceInfo) => {
-      const name = deviceInfo.nickname || deviceInfo.uuid;
+      const id = deviceInfo.device_id;
+      const name = deviceInfo.nickname || id;
       const { location } = deviceInfo;
       const lastPinged = deviceInfo.last_ping_timestamp;
       const isActive = deviceInfo.is_active;
       const status = computeStatusText(isActive, parseInt(lastPinged, 10));
 
       return {
+        id,
         name,
         location,
         status,
