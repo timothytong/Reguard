@@ -26,6 +26,32 @@ export function getSessionIfActive(sessionId) {
   });
 }
 
+export function batchCreateActiveSessions(sessionIds) {
+  const startTime = Date.now().toString();
+  const putRequests = sessionIds.map((sid) => ({
+    PutRequest: {
+      Item: {
+        session_id: sid,
+        start_time: startTime,
+      },
+    },
+  }));
+  const params = {
+    RequestItems: {
+      [SESSIONS_TABLE_NAME]: putRequests,
+    },
+  };
+
+  return new Promise((res, rej) => {
+    docClient.batchWrite(params, (err, data) => {
+      if (err) {
+        return rej(err);
+      }
+      return res(data);
+    });
+  });
+}
+
 export function createActiveSession(sessionId) {
   const startTime = Date.now().toString();
   const params = {
