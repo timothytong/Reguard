@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { refreshLastPingedTs } from '../dao/device-dao';
 import {
   setEndTime,
   getSessionIfActive,
@@ -7,26 +8,23 @@ import {
 
 const router = Router();
 
-function getActiveSession(req, res) {
-  // const { userId, deviceId } = req.body;
-
+async function getActiveSession(req, res) {
+  const { userId, deviceId } = req.query;
+  const sessionId = `${userId}#${deviceId}`;
   const onSuccess = (activeSession) => res.status(200).json({ activeSession });
-
   const onError = (err) => res.status(500).json({
     message: 'Unexpected error occurred while retrieving active session.',
     error: err.message,
   });
 
-  // TODO: `${userId}#${deviceId}`
-  const sessionId = 'user#uuid2';
-
-  return getSessionIfActive(sessionId)
+  return refreshLastPingedTs(userId, deviceId)
+    .then(() => getSessionIfActive(sessionId))
     .then((activeSession) => onSuccess(activeSession))
     .catch((err) => onError(err));
 }
 
 function startSessions(req, res) {
-  const { userId, deviceIds } = req.body;
+  const { userId, deviceIds, initiatedByDeviceId } = req.body;
 
   const onError = (err) => res.status(500).json({
     message: 'Error occurred while starting session.',
@@ -45,8 +43,7 @@ function startSessions(req, res) {
         }
         return sid;
       });
-      console.log(sidsToActivate);
-      return batchCreateActiveSessions(sidsToActivate)
+      return batchCreateActiveSessions(initiatedByDeviceId, sidsToActivate)
         .then(() => res.sendStatus(200));
     })
     .catch((err) => {

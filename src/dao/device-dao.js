@@ -2,7 +2,7 @@ import docClient from './dynamodb-dao';
 
 const DEVICES_TABLE_NAME = 'devices';
 
-export default function getDevicesWithUserId(userId) {
+export function getDevicesWithUserId(userId) {
   const params = {
     TableName: DEVICES_TABLE_NAME,
     KeyConditionExpression: '#uid = :uid',
@@ -22,6 +22,32 @@ export default function getDevicesWithUserId(userId) {
         return rej(err);
       }
       return res(data.Items);
+    });
+  });
+}
+
+export function refreshLastPingedTs(userId, deviceId) {
+  return new Promise((res, rej) => {
+    const params = {
+      TableName: DEVICES_TABLE_NAME,
+      Key: {
+        user_id: userId,
+        device_id: deviceId,
+      },
+      UpdateExpression: 'set #lpt = :lpt',
+      ExpressionAttributeNames: {
+        '#lpt': 'last_ping_timestamp',
+      },
+      ExpressionAttributeValues: {
+        ':lpt': Date.now().toString(),
+      },
+    };
+
+    return docClient.update(params, (err) => {
+      if (err) {
+        return rej(err);
+      }
+      return res();
     });
   });
 }

@@ -26,13 +26,14 @@ export function getSessionIfActive(sessionId) {
   });
 }
 
-export function batchCreateActiveSessions(sessionIds) {
+export function batchCreateActiveSessions(initiatingDeviceId, sessionIds) {
   const startTime = Date.now().toString();
   const putRequests = sessionIds.map((sid) => ({
     PutRequest: {
       Item: {
         session_id: sid,
         start_time: startTime,
+        initiated_by_device_id: initiatingDeviceId,
       },
     },
   }));

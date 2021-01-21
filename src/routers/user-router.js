@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import getDevicesWithUserId from '../dao/device-dao';
+import { getDevicesWithUserId } from '../dao/device-dao';
 import getEventsForUser from '../dao/event-dao';
 
 const router = Router();
