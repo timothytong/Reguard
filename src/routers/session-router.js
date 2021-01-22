@@ -11,7 +11,16 @@ const router = Router();
 async function getActiveSession(req, res) {
   const { userId, deviceId } = req.query;
   const sessionId = `${userId}#${deviceId}`;
-  const onSuccess = (activeSession) => res.status(200).json({ activeSession });
+  const onSuccess = (activeSession) => {
+    const session = {
+      sessionId: activeSession.session_id,
+      startTime: activeSession.start_time,
+      initiatedByDeviceId: activeSession.initiated_by_device_id,
+      initiatedByUserId: activeSession.initiated_by_user_id,
+      endTime: activeSession.end_time,
+    };
+    return res.status(200).json({ activeSession: session });
+  };
   const onError = (err) => res.status(500).json({
     message: 'Unexpected error occurred while retrieving active session.',
     error: err.message,
@@ -24,7 +33,12 @@ async function getActiveSession(req, res) {
 }
 
 function startSessions(req, res) {
-  const { userId, deviceIds, initiatedByDeviceId } = req.body;
+  const {
+    userId,
+    deviceIds,
+    initiatedByUserId,
+    initiatedByDeviceId,
+  } = req.body;
 
   const onError = (err) => res.status(500).json({
     message: 'Error occurred while starting session.',
@@ -43,7 +57,7 @@ function startSessions(req, res) {
         }
         return sid;
       });
-      return batchCreateActiveSessions(initiatedByDeviceId, sidsToActivate)
+      return batchCreateActiveSessions(initiatedByUserId, initiatedByDeviceId, sidsToActivate)
         .then(() => res.sendStatus(200));
     })
     .catch((err) => {
