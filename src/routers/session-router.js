@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 
-async function getActiveSession(req, res) {
+function getActiveSession(req, res) {
   const { userId, deviceId } = req.query;
   const sessionId = `${userId}#${deviceId}`;
   const onSuccess = (activeSession) => {
