@@ -35,6 +35,7 @@ export function refreshLastPingedTs(userId, deviceId) {
         device_id: deviceId,
       },
       UpdateExpression: 'set #lpt = :lpt',
+      ConditionExpression: 'attribute_exists(user_id)',
       ExpressionAttributeNames: {
         '#lpt': 'last_ping_timestamp',
       },
