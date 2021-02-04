@@ -1,6 +1,38 @@
 import docClient from './dynamodb-dao';
 
+const DEV_ONLINE_THRESHOLD_MINS = 5;
 const DEVICES_TABLE_NAME = 'devices';
+
+function computeStatusText(isActive, lastPingTs) {
+  if (isActive) {
+    return 'GUARDING';
+  }
+  const lastPingMinsAgo = (Date.now() - new Date(lastPingTs)) / (1000 * 60);
+  if (lastPingMinsAgo <= DEV_ONLINE_THRESHOLD_MINS) {
+    return 'ONLINE';
+  }
+  return 'OFFLINE';
+}
+
+function buildDeviceFromRecord(deviceInfo) {
+  if (!deviceInfo) {
+    return null;
+  }
+
+  const id = deviceInfo.device_id;
+  const name = deviceInfo.nickname || id;
+  const { location } = deviceInfo;
+  const lastPinged = deviceInfo.last_ping_timestamp;
+  const isActive = deviceInfo.is_active;
+  const status = computeStatusText(isActive, parseInt(lastPinged, 10));
+
+  return {
+    id,
+    name,
+    location,
+    status,
+  };
+}
 
 export function getUserDeviceInfo(userId, deviceId) {
   const params = {
@@ -23,7 +55,7 @@ export function getUserDeviceInfo(userId, deviceId) {
         console.trace(err);
         return rej(err);
       }
-      return res(data.Items[0]);
+      return res(buildDeviceFromRecord(data.Items[0]));
     });
   });
 }
@@ -47,7 +79,7 @@ export function getDevicesWithUserId(userId) {
         console.trace(err);
         return rej(err);
       }
-      return res(data.Items);
+      return res(data.Items.map((deviceItem) => buildDeviceFromRecord(deviceItem)));
     });
   });
 }

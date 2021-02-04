@@ -4,34 +4,6 @@ import { getDevicesWithUserId, getUserDeviceInfo } from '../dao/device-dao';
 import getEventsForUser from '../dao/event-dao';
 
 const router = Router();
-const DEV_ONLINE_THRESHOLD_MINS = 5;
-
-function computeStatusText(isActive, lastPingTs) {
-  if (isActive) {
-    return 'GUARDING';
-  }
-  const lastPingMinsAgo = (Date.now() - new Date(lastPingTs)) / (1000 * 60);
-  if (lastPingMinsAgo <= DEV_ONLINE_THRESHOLD_MINS) {
-    return 'ONLINE';
-  }
-  return 'OFFLINE';
-}
-
-function buildDeviceFromRecord(deviceInfo) {
-  const id = deviceInfo.device_id;
-  const name = deviceInfo.nickname || id;
-  const { location } = deviceInfo;
-  const lastPinged = deviceInfo.last_ping_timestamp;
-  const isActive = deviceInfo.is_active;
-  const status = computeStatusText(isActive, parseInt(lastPinged, 10));
-
-  return {
-    id,
-    name,
-    location,
-    status,
-  };
-}
 
 function getUserDevice(req, res) {
   const { deviceId, userId } = req.params;
@@ -42,7 +14,7 @@ function getUserDevice(req, res) {
   });
 
   return getUserDeviceInfo(userId, deviceId)
-    .then((deviceItem) => res.status(200).json({ device: buildDeviceFromRecord(deviceItem) }))
+    .then((device) => res.status(200).json({ device }))
     .catch((err) => onError(err));
 }
 
@@ -54,13 +26,8 @@ function getUserDevices(req, res) {
     error: err.message,
   });
 
-  const onSuccess = (deviceItems) => {
-    const devices = deviceItems.map((deviceInfo) => buildDeviceFromRecord(deviceInfo));
-    return res.status(200).json({ devices });
-  };
-
   return getDevicesWithUserId(userId)
-    .then((deviceItems) => onSuccess(deviceItems))
+    .then((devices) => res.status(200).json({ devices }))
     .catch((err) => onError(err));
 }
 
