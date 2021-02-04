@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { getDevicesWithUserId } from '../dao/device-dao';
+import { getDevicesWithUserId, getUserDeviceInfo } from '../dao/device-dao';
 import getEventsForUser from '../dao/event-dao';
 
 const router = Router();
@@ -17,9 +17,37 @@ function computeStatusText(isActive, lastPingTs) {
   return 'OFFLINE';
 }
 
+function buildDeviceFromRecord(deviceInfo) {
+  const id = deviceInfo.device_id;
+  const name = deviceInfo.nickname || id;
+  const { location } = deviceInfo;
+  const lastPinged = deviceInfo.last_ping_timestamp;
+  const isActive = deviceInfo.is_active;
+  const status = computeStatusText(isActive, parseInt(lastPinged, 10));
+
+  return {
+    id,
+    name,
+    location,
+    status,
+  };
+}
+
+function getUserDevice(req, res) {
+  const { deviceId, userId } = req.params;
+
+  const onError = (err) => res.status(500).json({
+    message: 'Error occurred while retrieving user device.',
+    error: err.message,
+  });
+
+  return getUserDeviceInfo(userId, deviceId)
+    .then((deviceItem) => res.status(200).json({ device: buildDeviceFromRecord(deviceItem) }))
+    .catch((err) => onError(err));
+}
+
 function getUserDevices(req, res) {
-  // const { userId } = req.body;
-  const userId = 'user';
+  const { userId } = req.params;
 
   const onError = (err) => res.status(500).json({
     message: 'Error occurred while retrieving user devices.',
@@ -27,22 +55,7 @@ function getUserDevices(req, res) {
   });
 
   const onSuccess = (deviceItems) => {
-    const devices = deviceItems.map((deviceInfo) => {
-      const id = deviceInfo.device_id;
-      const name = deviceInfo.nickname || id;
-      const { location } = deviceInfo;
-      const lastPinged = deviceInfo.last_ping_timestamp;
-      const isActive = deviceInfo.is_active;
-      const status = computeStatusText(isActive, parseInt(lastPinged, 10));
-
-      return {
-        id,
-        name,
-        location,
-        status,
-      };
-    });
-
+    const devices = deviceItems.map((deviceInfo) => buildDeviceFromRecord(deviceInfo));
     return res.status(200).json({ devices });
   };
 
@@ -52,8 +65,7 @@ function getUserDevices(req, res) {
 }
 
 function getUserEvents(req, res) {
-  // const { userId } = req.body;
-  const userId = 'user';
+  const { userId } = req.params;
 
   const onError = (err) => res.status(500).json({
     message: 'Error occurred while retrieving user events.',
@@ -86,7 +98,8 @@ function getUserEvents(req, res) {
     .catch((err) => onError(err));
 }
 
-router.get('/devices', getUserDevices);
-router.get('/events', getUserEvents);
+router.get('/:userId/device/:deviceId', getUserDevice);
+router.get('/:userId/devices', getUserDevices);
+router.get('/:userId/events', getUserEvents);
 
 module.exports = router;
