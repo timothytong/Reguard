@@ -1,6 +1,5 @@
 import { Router } from 'express';
-
-import { getDevicesWithUserId, getUserDeviceInfo } from '../dao/device-dao';
+import { createDevice, getDevicesWithUserId, getUserDeviceInfo } from '../dao/device-dao';
 import getEventsForUser from '../dao/event-dao';
 
 const router = Router();
@@ -65,6 +64,21 @@ function getUserEvents(req, res) {
     .catch((err) => onError(err));
 }
 
+function registerUserDevice(req, res) {
+  const { userId } = req.params;
+  const { deviceParams } = req.body;
+
+  const onError = (err) => res.status(500).json({
+    message: 'Error occurred while registering user device.',
+    error: err.message,
+  });
+
+  return createDevice(userId, deviceParams)
+    .then(() => res.sendStatus(200))
+    .catch((err) => onError(err));
+}
+
+router.post('/:userId/register_device', registerUserDevice);
 router.get('/:userId/device/:deviceId', getUserDevice);
 router.get('/:userId/devices', getUserDevices);
 router.get('/:userId/events', getUserEvents);

@@ -20,7 +20,7 @@ function buildDeviceFromRecord(deviceInfo) {
   }
 
   const id = deviceInfo.device_id;
-  const name = deviceInfo.nickname || id;
+  const name = deviceInfo.nickname || 'Unnamed Device';
   const { location } = deviceInfo;
   const lastPinged = deviceInfo.last_ping_timestamp;
   const isActive = deviceInfo.is_active;
@@ -103,6 +103,32 @@ export function refreshLastPingedTs(userId, deviceId) {
     };
 
     return docClient.update(params, (err) => {
+      if (err) {
+        return rej(err);
+      }
+      return res();
+    });
+  });
+}
+
+export function createDevice(userId, deviceParams) {
+  return new Promise((res, rej) => {
+    const { id, nickname, location } = deviceParams;
+    const lastPinged = Date.now().toString();
+    const recordItem = {
+      user_id: userId,
+      device_id: id,
+      nickname,
+      location,
+      last_ping_timestamp: lastPinged,
+      is_active: false,
+    };
+    const params = {
+      TableName: DEVICES_TABLE_NAME,
+      Item: recordItem,
+    };
+
+    return docClient.put(params, (err) => {
       if (err) {
         return rej(err);
       }
