@@ -66,7 +66,12 @@ function getUserEvents(req, res) {
 
 function registerUserDevice(req, res) {
   const { userId } = req.params;
-  const { deviceParams } = req.body;
+  const { id, nickname, location } = req.body;
+  const deviceParams = {
+    id,
+    nickname,
+    location,
+  };
 
   const onError = (err) => res.status(500).json({
     message: 'Error occurred while registering user device.',
@@ -75,7 +80,10 @@ function registerUserDevice(req, res) {
 
   return createDevice(userId, deviceParams)
     .then(() => res.sendStatus(200))
-    .catch((err) => onError(err));
+    .catch((err) => {
+      console.trace(err);
+      onError(err);
+    });
 }
 
 router.post('/:userId/register_device', registerUserDevice);
